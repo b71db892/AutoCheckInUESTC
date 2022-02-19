@@ -1,6 +1,6 @@
 from logger import logger
 import sqlite3
-
+import os
 
 class DB:
     '''
@@ -16,7 +16,7 @@ class DB:
         很无脑，类似于不断试错。
     '''
 
-    def __init__(self, db='imgs.db'):
+    def __init__(self, db=os.path.join(os.path.split(os.path.realpath(__file__))[0], 'imgs.db')):
         # 连接到SQlite数据库
         # 数据库文件是test.db，不存在，则自动创建
         self._conn = sqlite3.connect(db)

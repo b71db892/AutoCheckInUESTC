@@ -123,11 +123,11 @@ class CheckIn:
         self.wait.until(EC.presence_of_element_located((By.ID, "mobilePassword")))
         self.wait.until(EC.presence_of_element_located((By.ID, "load")))
         time.sleep(2)
-        logger.info(f'input user name ...')
+        logger.info(f'input username ...')
         js_comm = f'document.getElementById("mobileUsername").value="{tools.base64_decode(self.user_name)}"'
         self.driver.execute_script(js_comm)
         time.sleep(2)
-        logger.info(f'input pass word ...')
+        logger.info(f'input password ...')
         js_comm = f'document.getElementById("mobilePassword").value="{tools.base64_decode(self.passwd)}"'
         self.driver.execute_script(js_comm)
         time.sleep(2)
