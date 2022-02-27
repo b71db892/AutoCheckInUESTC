@@ -2,6 +2,7 @@ from logger import logger
 import sqlite3
 import os
 
+
 class DB:
     '''
     这是一个存储滑动验证码图片的数据库。所有图片以base64字符串形式存储。
@@ -19,6 +20,7 @@ class DB:
     def __init__(self, db=os.path.join(os.path.split(os.path.realpath(__file__))[0], 'imgs.db')):
         # 连接到SQlite数据库
         # 数据库文件是test.db，不存在，则自动创建
+        logger.info(f'DataBase 路径：{db}')
         self._conn = sqlite3.connect(db)
         self._conn.execute('pragma foreign_keys=on')
         self._cursor = self._conn.cursor()
