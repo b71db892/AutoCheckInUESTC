@@ -74,6 +74,7 @@ class CheckIn:
         options.add_argument('--mute-audio')  # 关闭声音
         options.add_argument('--disable-extensions')
         options.add_argument('--disable-gpu')
+        options.add_argument("--no-sandbox")
         options.add_experimental_option('excludeSwitches', ['enable-automation'])  # 绕过js检测
         # 在chrome79版本之后，上面的实验选项已经不能屏蔽webdriver特征了
         # 屏蔽webdriver特征
@@ -122,11 +123,11 @@ class CheckIn:
         self.wait.until(EC.presence_of_element_located((By.ID, "mobilePassword")))
         self.wait.until(EC.presence_of_element_located((By.ID, "load")))
         time.sleep(2)
-        logger.info(f'input user name ...')
+        logger.info(f'input username ...')
         js_comm = f'document.getElementById("mobileUsername").value="{tools.base64_decode(self.user_name)}"'
         self.driver.execute_script(js_comm)
         time.sleep(2)
-        logger.info(f'input pass word ...')
+        logger.info(f'input password ...')
         js_comm = f'document.getElementById("mobilePassword").value="{tools.base64_decode(self.passwd)}"'
         self.driver.execute_script(js_comm)
         time.sleep(2)
