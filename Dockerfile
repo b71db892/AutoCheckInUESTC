@@ -9,7 +9,7 @@ RUN pip install matplotlib numpy selenium \
   opencv-python undetected_chromedriver==3.0.3
 
 RUN apt-get update && \
-  apt-get -y install wget chromium chromium-chromedriver && \
+  apt-get -y install wget chromium chromium-driver && \
   apt-get -y autoremove && \
   apt-get clean
 
