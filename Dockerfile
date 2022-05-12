@@ -6,7 +6,7 @@ ENV APP_HOME="/app" \
 
 # install packages & config docker
 RUN pip install matplotlib numpy selenium \
-  opencv undetected_chromedriver==3.0.3
+  opencv-python undetected_chromedriver==3.0.3
 
 RUN apt-get update && \
   apt-get -y install wget chromium chromium-chromedriver && \
