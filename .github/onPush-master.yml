@@ -1,0 +1,22 @@
+name: OnPush master & upload dev image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build the Docker image
+        run: |
+          docker build . --file Dockerfile --tag lomot/aciu:latest
+      - name: upload image
+        run: |
+          CORE_VERSION=$(cat Dockerfile | grep "CORE_VERSION=" | cut -f2 -d \")
+          docker login --username=${{ secrets.DOCKER_ID }} --password=${{ secrets.DOCKER_TOKEN }}
+          docker push lomot/aciu:latest
