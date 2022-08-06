@@ -1,11 +1,13 @@
+import os
 import sys
 import time
+from pathlib import Path
 
 from logger import logger
 from driver import CheckIn
 from tools import base64_encode
 from config import user_list
-# from wechat import push_check_in_ok, push_check_in_failed
+from wechat import push_check_in_ok, push_check_in_failed
 
 
 def start(user_name, passwd, open_id):
@@ -15,7 +17,8 @@ def start(user_name, passwd, open_id):
             obj = CheckIn(base64_encode(user_name), base64_encode(passwd), mobile=True, headless=True)
             obj.run()
             logger.info(f'{time.asctime(time.localtime(time.time()))}\n{obj.checkin_name}今日打卡已完成！')
-            # push_check_in_ok(user_id=open_id, user_name=f'{user_name} {obj.checkin_name}', text="")
+            if open_id:
+                push_check_in_ok(user_id=open_id, user_name=f'{user_name} {obj.checkin_name}', text="")
             return 0
         except:
             import traceback
@@ -25,11 +28,15 @@ def start(user_name, passwd, open_id):
             logger.error(error_info)
         time.sleep(3 * 60)
     logger.info(f'{time.asctime(time.localtime(time.time()))}\n打卡失败。？#%！')
-    # push_check_in_failed(user_id=open_id, user_name=f'{user_name}', text=remark)
+    if open_id:
+        push_check_in_failed(user_id=open_id, user_name=f'{user_name}', text=remark)
     return -1
 
 
 if __name__ == '__main__':
+    pwd = os.getcwd()
+    os.chdir(os.path.abspath(Path(__file__).parent))
+    logger.info(f'Change Work dir: {pwd} -> {os.getcwd()}')
     return_code = []
     for user in user_list:
         return_code.append(start(user.user_name, user.passwd, user.wechat_openid))

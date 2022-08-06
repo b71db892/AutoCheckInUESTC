@@ -1,0 +1,7 @@
+numpy
+# install `py-opencv` or `opencv` when using conda env
+opencv-python
+selenium==4.0.0b4
+undetected_chromedriver==3.0.3
+
+# matplotlib  # for debug only

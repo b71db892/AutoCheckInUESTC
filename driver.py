@@ -5,14 +5,17 @@ import time
 import datetime
 from pathlib import Path
 
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import undetected_chromedriver as uc
 
 import tools
 from db import DB
 from image import IMG
 from logger import logger
+from config import chrome_path
 
 
 class CheckIn:
@@ -43,16 +46,15 @@ class CheckIn:
 
     @staticmethod
     def get_driver(headless, mobile):
-        from selenium import webdriver
+
         options = webdriver.ChromeOptions()
         platform = sys.platform
         project_dir = os.path.abspath(Path(__file__).parent)
+        chrome_dir = os.path.abspath(chrome_path)
         if platform.endswith("win32"):
-            chrome_dir = os.path.join(project_dir, 'chrome97_win10_64')
             chrome_executable_path = os.path.join(chrome_dir, 'chrome.exe')
             chrome_driver_path = os.path.join(chrome_dir, 'chromedriver.exe')
         elif platform.startswith("linux"):
-            chrome_dir = os.path.join(project_dir, 'chrome97_ubuntu64')
             chrome_executable_path = os.path.join(chrome_dir, 'chrome')
             chrome_crashpad_handler_path = os.path.join(chrome_dir, 'chrome_crashpad_handler')
             chrome_driver_path = os.path.join(chrome_dir, 'chromedriver')
@@ -61,8 +63,8 @@ class CheckIn:
             os.system(f'chmod a+x {chrome_crashpad_handler_path}')
             os.system(f'chmod a+x {chrome_driver_path}')
         elif platform.endswith("darwin"):  # 暂不支持
-            chrome_dir = chrome_executable_path = chrome_driver_path = ''
             logger.warning(f'Unsupported Platform `darwin`.')
+            raise Exception(f"Unsupported Platform `darwin`.")
         else:
             raise Exception(f"What's your platform?")
 
@@ -75,6 +77,7 @@ class CheckIn:
         options.add_argument('--disable-extensions')
         options.add_argument('--disable-gpu')
         options.add_argument("--no-sandbox")
+        options.add_argument(f'--user-data-dir={os.path.join(project_dir, "DefaultAppData")}')  # 设置成用户自己的数据目录
         options.add_experimental_option('excludeSwitches', ['enable-automation'])  # 绕过js检测
         # 在chrome79版本之后，上面的实验选项已经不能屏蔽webdriver特征了
         # 屏蔽webdriver特征
@@ -83,36 +86,28 @@ class CheckIn:
         # ==================== 寻找 chrome ====================
         if os.path.exists(chrome_executable_path):
             options.binary_location = chrome_executable_path
-            options.add_argument(f'--user-data-dir={os.path.join(chrome_dir, "DefaultAppData")}')  # 设置成用户自己的数据目录
             logger.info(f'可找到 "{chrome_executable_path}"')
         else:
-            options.add_argument(f'--user-data-dir={os.path.join(project_dir, "./DefaultAppData")}')  # 设置成用户自己的数据目录
-            logger.info('找不到 chrome 二进制文件位置,使用系统默认位置')
+            logger.info(f'chrome目录不存在:"{chrome_executable_path}"')
+            logger.info(f'使用系统默认chrome位置')
         # ==================== 寻找 chromedriver ====================
-        # 自带的driver是从 undetected_chromedriver 包里copy过来的,可以隐藏chromedriver特征
+        # 新版undetected_chromedriver改动较大且不支持chrome模拟手机
         if os.path.exists(chrome_driver_path):
             logger.info(f'可找到 "{chrome_driver_path}"')
-            # selenium 旧版的代码,新版接口可能不兼容
-            return webdriver.Chrome(executable_path=chrome_driver_path, chrome_options=options)
-            # selenium 新版的代码
-            # from selenium.webdriver.chrome.service import Service
-            # return webdriver.Chrome(service=Service(chrome_driver_path), options=options)
         else:
-            logger.info('找不到 chromedriver 二进制文件位置, 启用 undetected_chromedriver.')
-            import undetected_chromedriver as uc
-            return uc.Chrome(options=options)  # version = 97
+            # 自动下载chromedriver默认仅支持最新版的chrome, 如果使用其他版chrome要手动指定版本
+            # chromedriver会被undetected_chromedriver缓存在项目目录下, 如果修改了chrome版本要手动删除旧的chromedriver.exe文件
+            logger.info(f'chromedriver目录不存在:"{chrome_driver_path}"')
+            logger.info(f'使用undetected_chromedriver默认chromedriver版本')
+            chrome_driver_path = None
+        # uc.TARGET_VERSION = 97  # 可以手动指定目标chrome版本
+        logger.info(f'启用 undetected_chromedriver, chromedriver版本:{chrome_driver_path or uc.TARGET_VERSION}')
+        return uc.Chrome(executable_path=chrome_driver_path, options=options)  # version = 97
 
     def run(self):
         self.mobile_open_website()
         self.mobile_pic_confirm()
         self.mobile_check_in_once()
-        # # PC端页面签到停止维护
-        # self.open_website()
-        # self.pic_confirm()
-        # self.check_in_once()
-
-    def open_website(self):
-        pass
 
     def mobile_open_website(self):
         # 打开网址 自动跳转
@@ -167,9 +162,6 @@ class CheckIn:
             dis = tools.get_distance(img1, img2, canvas_width, self.db)
             dis = int(dis - slider.size['width'] * 0.5)
             print(dis)
-
-    def pic_confirm(self, ):
-        pass
 
     def mobile_pic_confirm(self, ):
         # 移动端过滑动验证码
@@ -250,9 +242,6 @@ class CheckIn:
         js_comm = movejs + "move(myElement, {},0);".format(sum(track))
         self.driver.execute_script(js_comm)
         time.sleep(10)
-
-    def check_in_once(self):
-        pass
 
     def mobile_check_in_once(self):
         # 进行一次签到

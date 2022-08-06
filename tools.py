@@ -9,7 +9,6 @@ from typing import List, Tuple, NoReturn, Union
 
 import cv2
 import numpy as np
-from matplotlib import pyplot as plt
 from selenium.webdriver import TouchActions
 from selenium.webdriver.common.action_chains import ActionChains
 
@@ -150,17 +149,6 @@ def cv2_ndarray_to_cv2(ndarray):
     # 合并通道，形成图片
     img = cv2.merge([b, g, r])
     return img
-
-
-# ########### 图片显示 ###########################
-def imshow(arr, rgb=False) -> NoReturn:
-    fig, ax = plt.subplots()
-    ax.spines[:].set_visible(False)
-    ax.spines.top.set_visible(False)
-    if rgb:
-        arr = arr.copy() if rgb else arr[:, :, ::-1]
-    ax.imshow(arr, cmap=plt.cm.gray)
-    plt.show()
 
 
 # ########### 验证图片处理逻辑 ###########################
