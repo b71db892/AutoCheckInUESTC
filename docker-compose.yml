@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  uhr:
+    container_name: uhr
+    image: auto-checkin-uhr:latest
+    volumes:
+      - ./config.py:/app/server/config.py
+    restart: on-failure
+    stdin_open: true
+    tty: true
+    
